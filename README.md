@@ -17,9 +17,10 @@ See the [examples](examples/) directory for uh...examples.
 package main
 
 import (
-    "github.com/golang/protobuf/proto"
-    "github.com/golang/protobuf/types/pluginpb"
-    "github.com/aggronmagi/protokit"
+	"github.com/aggronmagi/protokit"
+	"google.golang.org/protobuf/proto"
+	"google.golang.org/protobuf/types/descriptorpb"
+	"google.golang.org/protobuf/types/pluginpb"
     _ "google.golang.org/genproto/googleapis/api/annotations" // Support (google.api.http) option (from google/api/annotations.proto).
 
     "log"
@@ -36,11 +37,11 @@ func main() {
 type plugin struct{}
 
 func (p *plugin) Generate(in *plugin_go.CodeGeneratorRequest) (*plugin_go.CodeGeneratorResponse, error) {
-    descriptorpbpbs := protokit.ParseCodeGenRequest(req)
+    descriptorpbs := protokit.ParseCodeGenRequest(req)
 
     resp := new(plugin_go.CodeGeneratorResponse)
 
-    for _, d := range descriptorpbpbs {
+    for _, d := range descriptorpbs {
         // TODO: YOUR WORK HERE
         fileName := // generate a file name based on d.GetName()
         content := // generate content for the output file

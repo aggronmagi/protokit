@@ -3,11 +3,10 @@ package protokit
 import (
 	"context"
 	"fmt"
-	"sort"
-	"strings"
-
 	"google.golang.org/protobuf/types/descriptorpb"
 	"google.golang.org/protobuf/types/pluginpb"
+	"sort"
+	"strings"
 )
 
 const (
@@ -198,8 +197,10 @@ func parseImports(impDesc *map[string]*ImportedDescriptor, fd *FileDescriptor, a
 }
 
 func parsePublicImport(impDesc *map[string]*ImportedDescriptor, fd *FileDescriptor, allFiles map[string]*FileDescriptor) {
-	for _, index := range fd.GetPublicDependency() {
-		file := allFiles[fd.GetDependency()[index]]
+	//for _, index := range fd.GetPublicDependency() {
+	//file := allFiles[fd.GetDependency()[index]]
+	for _, dep := range fd.GetDependency() {
+		file := allFiles[dep]
 
 		for _, d := range file.GetMessages() {
 			// skip map entry objects
