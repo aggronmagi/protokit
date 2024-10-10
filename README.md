@@ -7,6 +7,8 @@
 
 A starter kit for building protoc-plugins. Rather than write your own, you can just use an existing one.
 
+clone https://github.com/pseudomuto/protokit
+
 See the [examples](examples/) directory for uh...examples.
 
 ## Getting Started
@@ -16,8 +18,8 @@ package main
 
 import (
     "github.com/golang/protobuf/proto"
-    "github.com/golang/protobuf/protoc-gen-go/plugin"
-    "github.com/pseudomuto/protokit"
+    "github.com/golang/protobuf/types/pluginpb"
+    "github.com/aggronmagi/protokit"
     _ "google.golang.org/genproto/googleapis/api/annotations" // Support (google.api.http) option (from google/api/annotations.proto).
 
     "log"
@@ -34,11 +36,11 @@ func main() {
 type plugin struct{}
 
 func (p *plugin) Generate(in *plugin_go.CodeGeneratorRequest) (*plugin_go.CodeGeneratorResponse, error) {
-    descriptors := protokit.ParseCodeGenRequest(req)
+    descriptorpbpbs := protokit.ParseCodeGenRequest(req)
 
     resp := new(plugin_go.CodeGeneratorResponse)
 
-    for _, d := range descriptors {
+    for _, d := range descriptorpbpbs {
         // TODO: YOUR WORK HERE
         fileName := // generate a file name based on d.GetName()
         content := // generate content for the output file
@@ -58,14 +60,14 @@ Then invoke your plugin via `protoc`. For example (assuming your app is called `
 `protoc --plugin=protoc-gen-thingy=./thingy -I. --thingy_out=. rpc/*.proto`
 
 [travis-svg]:
-  https://travis-ci.org/pseudomuto/protokit.svg?branch=master
+  https://travis-ci.org/aggronmagi/protokit.svg?branch=master
 	"Travis CI build status SVG"
 [travis-ci]:
-  https://travis-ci.org/pseudomuto/protokit
+  https://travis-ci.org/aggronmagi/protokit
   "protoc-gen-twagger at Travis CI"
-[codecov-svg]: https://codecov.io/gh/pseudomuto/protokit/branch/master/graph/badge.svg
-[codecov-url]: https://codecov.io/gh/pseudomuto/protokit
-[godoc-svg]: https://godoc.org/github.com/pseudomuto/protokit?status.svg
-[godoc-url]: https://godoc.org/github.com/pseudomuto/protokit
-[goreport-svg]: https://goreportcard.com/badge/github.com/pseudomuto/protokit
-[goreport-url]: https://goreportcard.com/report/github.com/pseudomuto/protokit
+[codecov-svg]: https://codecov.io/gh/aggronmagi/protokit/branch/master/graph/badge.svg
+[codecov-url]: https://codecov.io/gh/aggronmagi/protokit
+[godoc-svg]: https://godoc.org/github.com/aggronmagi/protokit?status.svg
+[godoc-url]: https://godoc.org/github.com/aggronmagi/protokit
+[goreport-svg]: https://goreportcard.com/badge/github.com/aggronmagi/protokit
+[goreport-url]: https://goreportcard.com/report/github.com/aggronmagi/protokit

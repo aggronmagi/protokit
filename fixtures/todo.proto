@@ -16,19 +16,19 @@ option go_package = "todo";
 //
 // * `make setup`
 // * `make test`
-package com.pseudomuto.protokit.v1;
+package com.aggronmagi.protokit.v1;
 
-option (com.pseudomuto.protokit.v1.extend_file) = true;
+option (com.aggronmagi.protokit.v1.extend_file) = false;
 
 // A service for managing "todo" items.
 //
 // Add, complete, and remove your items on your todo lists.
 service Todo {
-  option (com.pseudomuto.protokit.v1.extend_service) = true;
+  option (com.aggronmagi.protokit.v1.extend_service) = true;
 
   // Create a new todo list
   rpc CreateList(CreateListRequest) returns (CreateListResponse) {
-    option (com.pseudomuto.protokit.v1.extend_method) = true;
+    option (com.aggronmagi.protokit.v1.extend_method) = true;
   }
 
   // Add an item to your list
@@ -39,18 +39,18 @@ service Todo {
 
 // An enumeration of list types
 enum ListType {
-  option (com.pseudomuto.protokit.v1.extend_enum) = true;
+  option (com.aggronmagi.protokit.v1.extend_enum) = true;
 
   REMINDERS = 0; // The reminders type.
-  CHECKLIST = 1 [(com.pseudomuto.protokit.v1.extend_enum_value) = true]; // The checklist type.
+  CHECKLIST = 1 [(com.aggronmagi.protokit.v1.extend_enum_value) = true]; // The checklist type.
 }
 
 // A list object.
 message List {
-  option (com.pseudomuto.protokit.v1.extend_message) = true;
+  option (com.aggronmagi.protokit.v1.extend_message) = true;
 
   int64 id                             = 1; // The id of the list.
-  string name                          = 2 [(com.pseudomuto.protokit.v1.extend_field) = true]; // The name of the list.
+  string name                          = 2 [(com.aggronmagi.protokit.v1.extend_field) = "x3s"]; // The name of the list.
   ListType type                        = 3; // The type of list
   google.protobuf.Timestamp created_at = 4; // The timestamp for creation.
   google.protobuf.Any details          = 5; // Some arbitrary list details.

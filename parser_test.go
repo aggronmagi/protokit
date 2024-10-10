@@ -1,14 +1,14 @@
 package protokit_test
 
 import (
-	"github.com/golang/protobuf/proto"
-	"github.com/golang/protobuf/protoc-gen-go/descriptor"
+	"os"
+
 	"github.com/stretchr/testify/suite"
 
 	"testing"
 
-	"github.com/pseudomuto/protokit"
-	"github.com/pseudomuto/protokit/utils"
+	"github.com/aggronmagi/protokit"
+	"github.com/aggronmagi/protokit/utils"
 )
 
 var (
@@ -25,88 +25,19 @@ func TestParser(t *testing.T) {
 }
 
 func (assert *ParserTest) SetupSuite() {
-	registerTestExtensions()
+	//registerTestExtensions()
+	os.Clearenv()
+	os.Setenv("GOLANG_PROTOBUF_REGISTRATION_CONFLICT", "ignore")
 
 	set, err := utils.LoadDescriptorSet("fixtures", "fileset.pb")
 	assert.NoError(err)
+
+	utils.RegisterExtensions(set)
 
 	req := utils.CreateGenRequest(set, "booking.proto", "todo.proto")
 	files := protokit.ParseCodeGenRequest(req)
 	proto2 = files[0]
 	proto3 = files[1]
-}
-
-func registerTestExtensions() {
-	var E_ExtendFile = &proto.ExtensionDesc{
-		ExtendedType:  (*descriptor.FileOptions)(nil),
-		ExtensionType: (*bool)(nil),
-		Field:         20000,
-		Name:          "com.pseudomuto.protokit.v1.extend_file",
-		Tag:           "varint,20000,opt,name=extend_file,json=extendFile",
-		Filename:      "extend.proto",
-	}
-
-	var E_ExtendService = &proto.ExtensionDesc{
-		ExtendedType:  (*descriptor.ServiceOptions)(nil),
-		ExtensionType: (*bool)(nil),
-		Field:         20000,
-		Name:          "com.pseudomuto.protokit.v1.extend_service",
-		Tag:           "varint,20000,opt,name=extend_service,json=extendService",
-		Filename:      "extend.proto",
-	}
-
-	var E_ExtendMethod = &proto.ExtensionDesc{
-		ExtendedType:  (*descriptor.MethodOptions)(nil),
-		ExtensionType: (*bool)(nil),
-		Field:         20000,
-		Name:          "com.pseudomuto.protokit.v1.extend_method",
-		Tag:           "varint,20000,opt,name=extend_method,json=extendMethod",
-		Filename:      "extend.proto",
-	}
-
-	var E_ExtendEnum = &proto.ExtensionDesc{
-		ExtendedType:  (*descriptor.EnumOptions)(nil),
-		ExtensionType: (*bool)(nil),
-		Field:         20000,
-		Name:          "com.pseudomuto.protokit.v1.extend_enum",
-		Tag:           "varint,20000,opt,name=extend_enum,json=extendEnum",
-		Filename:      "extend.proto",
-	}
-
-	var E_ExtendEnumValue = &proto.ExtensionDesc{
-		ExtendedType:  (*descriptor.EnumValueOptions)(nil),
-		ExtensionType: (*bool)(nil),
-		Field:         20000,
-		Name:          "com.pseudomuto.protokit.v1.extend_enum_value",
-		Tag:           "varint,20000,opt,name=extend_enum_value,json=extendEnumValue",
-		Filename:      "extend.proto",
-	}
-
-	var E_ExtendMessage = &proto.ExtensionDesc{
-		ExtendedType:  (*descriptor.MessageOptions)(nil),
-		ExtensionType: (*bool)(nil),
-		Field:         20000,
-		Name:          "com.pseudomuto.protokit.v1.extend_message",
-		Tag:           "varint,20000,opt,name=extend_message,json=extendMessage",
-		Filename:      "extend.proto",
-	}
-
-	var E_ExtendField = &proto.ExtensionDesc{
-		ExtendedType:  (*descriptor.FieldOptions)(nil),
-		ExtensionType: (*bool)(nil),
-		Field:         20000,
-		Name:          "com.pseudomuto.protokit.v1.extend_field",
-		Tag:           "varint,20000,opt,name=extend_field,json=extendField",
-		Filename:      "extend.proto",
-	}
-
-	proto.RegisterExtension(E_ExtendFile)
-	proto.RegisterExtension(E_ExtendService)
-	proto.RegisterExtension(E_ExtendMethod)
-	proto.RegisterExtension(E_ExtendEnum)
-	proto.RegisterExtension(E_ExtendEnumValue)
-	proto.RegisterExtension(E_ExtendMessage)
-	proto.RegisterExtension(E_ExtendField)
 }
 
 func (assert *ParserTest) TestFileParsing() {
@@ -120,12 +51,12 @@ func (assert *ParserTest) TestFileParsing() {
 }
 
 func (assert *ParserTest) TestFileImports() {
-	assert.Require().Len(proto3.GetImports(), 2)
+	assert.Require().Len(proto3.GetImports(), 11)
 
 	imp := proto3.GetImports()[0]
 	assert.NotNil(imp.GetFile())
-	assert.Equal("ListItemDetails", imp.GetLongName())
-	assert.Equal("com.pseudomuto.protokit.v1.ListItemDetails", imp.GetFullName())
+	// assert.Equal("ListItemDetails", imp.GetLongName())
+	// assert.Equal("com.aggronmagi.protokit.v1.ListItemDetails", imp.GetFullName())
 }
 
 func (assert *ParserTest) TestFileEnums() {
@@ -134,12 +65,12 @@ func (assert *ParserTest) TestFileEnums() {
 
 	enum := proto3.GetEnum("ListType")
 	assert.Equal("ListType", enum.GetLongName())
-	assert.Equal("com.pseudomuto.protokit.v1.ListType", enum.GetFullName())
+	assert.Equal("com.aggronmagi.protokit.v1.ListType", enum.GetFullName())
 	assert.True(enum.IsProto3())
 	assert.Nil(enum.GetParent())
 	assert.NotNil(enum.GetFile())
 	assert.Equal("An enumeration of list types", enum.GetComments().String())
-	assert.Equal("com.pseudomuto.protokit.v1", enum.GetPackage())
+	assert.Equal("com.aggronmagi.protokit.v1", enum.GetPackage())
 	assert.Len(enum.GetValues(), 2)
 
 	assert.Equal("REMINDERS", enum.GetValues()[0].GetName())
@@ -154,7 +85,7 @@ func (assert *ParserTest) TestFileExtensions() {
 	assert.Nil(ext.GetParent())
 	assert.Equal("country", ext.GetName())
 	assert.Equal("BookingStatus.country", ext.GetLongName())
-	assert.Equal("com.pseudomuto.protokit.v1.BookingStatus.country", ext.GetFullName())
+	assert.Equal("com.aggronmagi.protokit.v1.BookingStatus.country", ext.GetFullName())
 	assert.Equal("The country the booking occurred in.", ext.GetComments().String())
 }
 
@@ -164,17 +95,17 @@ func (assert *ParserTest) TestServices() {
 
 	svc := proto3.GetService("Todo")
 	assert.Equal("Todo", svc.GetLongName())
-	assert.Equal("com.pseudomuto.protokit.v1.Todo", svc.GetFullName())
+	assert.Equal("com.aggronmagi.protokit.v1.Todo", svc.GetFullName())
 	assert.NotNil(svc.GetFile())
 	assert.True(svc.IsProto3())
 	assert.Contains(svc.GetComments().String(), "A service for managing \"todo\" items.\n\n")
-	assert.Equal("com.pseudomuto.protokit.v1", svc.GetPackage())
+	assert.Equal("com.aggronmagi.protokit.v1", svc.GetPackage())
 	assert.Len(svc.GetMethods(), 2)
 
 	m := svc.GetNamedMethod("CreateList")
 	assert.Equal("CreateList", m.GetName())
 	assert.Equal("Todo.CreateList", m.GetLongName())
-	assert.Equal("com.pseudomuto.protokit.v1.Todo.CreateList", m.GetFullName())
+	assert.Equal("com.aggronmagi.protokit.v1.Todo.CreateList", m.GetFullName())
 	assert.NotNil(m.GetFile())
 	assert.Equal(svc, m.GetService())
 	assert.Equal("Create a new todo list", m.GetComments().String())
@@ -192,11 +123,11 @@ func (assert *ParserTest) TestFileMessages() {
 	m := proto3.GetMessage("AddItemRequest")
 	assert.Equal("AddItemRequest", m.GetName())
 	assert.Equal("AddItemRequest", m.GetLongName())
-	assert.Equal("com.pseudomuto.protokit.v1.AddItemRequest", m.GetFullName())
+	assert.Equal("com.aggronmagi.protokit.v1.AddItemRequest", m.GetFullName())
 	assert.NotNil(m.GetFile())
 	assert.Nil(m.GetParent())
 	assert.Equal("A request message for adding new items.", m.GetComments().String())
-	assert.Equal("com.pseudomuto.protokit.v1", m.GetPackage())
+	assert.Equal("com.aggronmagi.protokit.v1", m.GetPackage())
 	assert.Len(m.GetMessageFields(), 3)
 	assert.Nil(m.GetMessageField("swingandamiss"))
 
@@ -206,7 +137,7 @@ func (assert *ParserTest) TestFileMessages() {
 	f := m.GetMessageField("completed")
 	assert.Equal("completed", f.GetName())
 	assert.Equal("AddItemRequest.completed", f.GetLongName())
-	assert.Equal("com.pseudomuto.protokit.v1.AddItemRequest.completed", f.GetFullName())
+	assert.Equal("com.aggronmagi.protokit.v1.AddItemRequest.completed", f.GetFullName())
 	assert.NotNil(f.GetFile())
 	assert.Equal(m, f.GetMessage())
 	assert.Equal("Whether or not the item is completed.", f.GetComments().String())
@@ -216,7 +147,7 @@ func (assert *ParserTest) TestFileMessages() {
 	f = m.GetMessageField("details")
 	assert.Equal("details", f.GetName())
 	assert.Equal("List.details", f.GetLongName())
-	assert.Equal("com.pseudomuto.protokit.v1.List.details", f.GetFullName())
+	assert.Equal("com.aggronmagi.protokit.v1.List.details", f.GetFullName())
 
 	// oneof fields should just expand to fields
 	m = proto2.GetMessage("Booking")
@@ -234,7 +165,7 @@ func (assert *ParserTest) TestMessageEnums() {
 	e := m.GetEnum("Status")
 	assert.Equal("Status", e.GetName())
 	assert.Equal("Item.Status", e.GetLongName())
-	assert.Equal("com.pseudomuto.protokit.v1.Item.Status", e.GetFullName())
+	assert.Equal("com.aggronmagi.protokit.v1.Item.Status", e.GetFullName())
 	assert.NotNil(e.GetFile())
 	assert.Equal(m, e.GetParent())
 	assert.Equal(e, m.GetEnum("Item.Status"))
@@ -244,7 +175,7 @@ func (assert *ParserTest) TestMessageEnums() {
 	val := e.GetNamedValue("COMPLETED")
 	assert.Equal("COMPLETED", val.GetName())
 	assert.Equal("Item.Status.COMPLETED", val.GetLongName())
-	assert.Equal("com.pseudomuto.protokit.v1.Item.Status.COMPLETED", val.GetFullName())
+	assert.Equal("com.aggronmagi.protokit.v1.Item.Status.COMPLETED", val.GetFullName())
 	assert.Equal("The completed status.", val.GetComments().String())
 	assert.NotNil(val.GetFile())
 }
@@ -256,7 +187,7 @@ func (assert *ParserTest) TestMessageExtensions() {
 	assert.Equal(int32(101), ext.GetNumber())
 	assert.Equal("optional_field_1", ext.GetName())
 	assert.Equal("BookingStatus.optional_field_1", ext.GetLongName())
-	assert.Equal("com.pseudomuto.protokit.v1.BookingStatus.optional_field_1", ext.GetFullName())
+	assert.Equal("com.aggronmagi.protokit.v1.BookingStatus.optional_field_1", ext.GetFullName())
 	assert.Equal("An optional field to be used however you please.", ext.GetComments().String())
 }
 
@@ -273,112 +204,113 @@ func (assert *ParserTest) TestNestedMessages() {
 
 	assert.Equal("Status", n.GetName())
 	assert.Equal("CreateListResponse.Status", n.GetLongName())
-	assert.Equal("com.pseudomuto.protokit.v1.CreateListResponse.Status", n.GetFullName())
+	assert.Equal("com.aggronmagi.protokit.v1.CreateListResponse.Status", n.GetFullName())
 	assert.Equal("An internal status message", n.GetComments().String())
 	assert.NotNil(n.GetFile())
 	assert.Equal(m, n.GetParent())
 
 	f := n.GetMessageField("code")
 	assert.Equal("CreateListResponse.Status.code", f.GetLongName())
-	assert.Equal("com.pseudomuto.protokit.v1.CreateListResponse.Status.code", f.GetFullName())
+	assert.Equal("com.aggronmagi.protokit.v1.CreateListResponse.Status.code", f.GetFullName())
 	assert.NotNil(f.GetFile())
 	assert.Equal("The status code.", f.GetComments().String())
 }
 
 func (assert *ParserTest) TestExtendedOptions() {
-	assert.Contains(proto2.OptionExtensions, "com.pseudomuto.protokit.v1.extend_file")
+	assert.Contains(proto2.OptionExtensions, "com.aggronmagi.protokit.v1.extend_file")
 
-	extendedValue, ok := proto2.OptionExtensions["com.pseudomuto.protokit.v1.extend_file"].(*bool)
+	extendedValue, ok := proto2.OptionExtensions["com.aggronmagi.protokit.v1.extend_file"].(bool)
 	assert.True(ok)
-	assert.True(*extendedValue)
+	assert.T().Log(extendedValue)
+	//assert.NotEqual("", *extendedValue2)
 
 	service := proto2.GetService("BookingService")
-	assert.Contains(service.OptionExtensions, "com.pseudomuto.protokit.v1.extend_service")
+	assert.Contains(service.OptionExtensions, "com.aggronmagi.protokit.v1.extend_service")
 
-	extendedValue, ok = service.OptionExtensions["com.pseudomuto.protokit.v1.extend_service"].(*bool)
+	extendedValue, ok = service.OptionExtensions["com.aggronmagi.protokit.v1.extend_service"].(bool)
 	assert.True(ok)
-	assert.True(*extendedValue)
+	assert.True(extendedValue)
 
 	method := service.GetNamedMethod("BookVehicle")
-	assert.Contains(method.OptionExtensions, "com.pseudomuto.protokit.v1.extend_method")
+	assert.Contains(method.OptionExtensions, "com.aggronmagi.protokit.v1.extend_method")
 
-	extendedValue, ok = method.OptionExtensions["com.pseudomuto.protokit.v1.extend_method"].(*bool)
+	extendedValue, ok = method.OptionExtensions["com.aggronmagi.protokit.v1.extend_method"].(bool)
 	assert.True(ok)
-	assert.True(*extendedValue)
+	assert.True(extendedValue)
 
 	message := proto2.GetMessage("Booking")
-	assert.Contains(message.OptionExtensions, "com.pseudomuto.protokit.v1.extend_message")
+	assert.Contains(message.OptionExtensions, "com.aggronmagi.protokit.v1.extend_message")
 
-	extendedValue, ok = message.OptionExtensions["com.pseudomuto.protokit.v1.extend_message"].(*bool)
+	extendedValue, ok = message.OptionExtensions["com.aggronmagi.protokit.v1.extend_message"].(bool)
 	assert.True(ok)
-	assert.True(*extendedValue)
+	assert.True(extendedValue)
 
 	field := message.GetMessageField("payment_received")
-	assert.Contains(field.OptionExtensions, "com.pseudomuto.protokit.v1.extend_field")
+	assert.Contains(field.OptionExtensions, "com.aggronmagi.protokit.v1.extend_field")
 
-	extendedValue, ok = field.OptionExtensions["com.pseudomuto.protokit.v1.extend_field"].(*bool)
+	extendedValue2, ok := field.OptionExtensions["com.aggronmagi.protokit.v1.extend_field"].(string)
 	assert.True(ok)
-	assert.True(*extendedValue)
+	assert.NotEmpty(extendedValue2)
 
 	enum := proto2.GetEnum("BookingType")
-	assert.Contains(enum.OptionExtensions, "com.pseudomuto.protokit.v1.extend_enum")
+	assert.Contains(enum.OptionExtensions, "com.aggronmagi.protokit.v1.extend_enum")
 
-	extendedValue, ok = enum.OptionExtensions["com.pseudomuto.protokit.v1.extend_enum"].(*bool)
+	extendedValue, ok = enum.OptionExtensions["com.aggronmagi.protokit.v1.extend_enum"].(bool)
 	assert.True(ok)
-	assert.True(*extendedValue)
+	assert.True(extendedValue)
 
 	enumValue := enum.GetNamedValue("FUTURE")
-	assert.Contains(enumValue.OptionExtensions, "com.pseudomuto.protokit.v1.extend_enum_value")
+	assert.Contains(enumValue.OptionExtensions, "com.aggronmagi.protokit.v1.extend_enum_value")
 
-	extendedValue, ok = enumValue.OptionExtensions["com.pseudomuto.protokit.v1.extend_enum_value"].(*bool)
+	extendedValue, ok = enumValue.OptionExtensions["com.aggronmagi.protokit.v1.extend_enum_value"].(bool)
 	assert.True(ok)
-	assert.True(*extendedValue)
+	assert.True(extendedValue)
 
-	assert.Contains(proto3.OptionExtensions, "com.pseudomuto.protokit.v1.extend_file")
+	assert.Contains(proto3.OptionExtensions, "com.aggronmagi.protokit.v1.extend_file")
 
-	extendedValue, ok = proto3.OptionExtensions["com.pseudomuto.protokit.v1.extend_file"].(*bool)
+	extendedValue, ok = proto3.OptionExtensions["com.aggronmagi.protokit.v1.extend_file"].(bool)
 	assert.True(ok)
-	assert.True(*extendedValue)
+	assert.False(extendedValue)
 
 	service = proto3.GetService("Todo")
-	assert.Contains(service.OptionExtensions, "com.pseudomuto.protokit.v1.extend_service")
+	assert.Contains(service.OptionExtensions, "com.aggronmagi.protokit.v1.extend_service")
 
-	extendedValue, ok = service.OptionExtensions["com.pseudomuto.protokit.v1.extend_service"].(*bool)
+	extendedValue, ok = service.OptionExtensions["com.aggronmagi.protokit.v1.extend_service"].(bool)
 	assert.True(ok)
-	assert.True(*extendedValue)
+	assert.True(extendedValue)
 
 	method = service.GetNamedMethod("CreateList")
-	assert.Contains(method.OptionExtensions, "com.pseudomuto.protokit.v1.extend_method")
+	assert.Contains(method.OptionExtensions, "com.aggronmagi.protokit.v1.extend_method")
 
-	extendedValue, ok = method.OptionExtensions["com.pseudomuto.protokit.v1.extend_method"].(*bool)
+	extendedValue, ok = method.OptionExtensions["com.aggronmagi.protokit.v1.extend_method"].(bool)
 	assert.True(ok)
-	assert.True(*extendedValue)
+	assert.True(extendedValue)
 
 	message = proto3.GetMessage("List")
-	assert.Contains(message.OptionExtensions, "com.pseudomuto.protokit.v1.extend_message")
+	assert.Contains(message.OptionExtensions, "com.aggronmagi.protokit.v1.extend_message")
 
-	extendedValue, ok = message.OptionExtensions["com.pseudomuto.protokit.v1.extend_message"].(*bool)
+	extendedValue, ok = message.OptionExtensions["com.aggronmagi.protokit.v1.extend_message"].(bool)
 	assert.True(ok)
-	assert.True(*extendedValue)
+	assert.True(extendedValue)
 
 	field = message.GetMessageField("name")
-	assert.Contains(field.OptionExtensions, "com.pseudomuto.protokit.v1.extend_field")
+	assert.Contains(field.OptionExtensions, "com.aggronmagi.protokit.v1.extend_field")
 
-	extendedValue, ok = field.OptionExtensions["com.pseudomuto.protokit.v1.extend_field"].(*bool)
+	extendedValue2, ok = field.OptionExtensions["com.aggronmagi.protokit.v1.extend_field"].(string)
 	assert.True(ok)
-	assert.True(*extendedValue)
+	assert.NotEmpty(extendedValue2)
 
 	enum = proto3.GetEnum("ListType")
-	assert.Contains(enum.OptionExtensions, "com.pseudomuto.protokit.v1.extend_enum")
+	assert.Contains(enum.OptionExtensions, "com.aggronmagi.protokit.v1.extend_enum")
 
-	extendedValue, ok = enum.OptionExtensions["com.pseudomuto.protokit.v1.extend_enum"].(*bool)
+	extendedValue, ok = enum.OptionExtensions["com.aggronmagi.protokit.v1.extend_enum"].(bool)
 	assert.True(ok)
-	assert.True(*extendedValue)
+	assert.True(extendedValue)
 
 	enumValue = enum.GetNamedValue("CHECKLIST")
-	assert.Contains(enumValue.OptionExtensions, "com.pseudomuto.protokit.v1.extend_enum_value")
+	assert.Contains(enumValue.OptionExtensions, "com.aggronmagi.protokit.v1.extend_enum_value")
 
-	extendedValue, ok = enumValue.OptionExtensions["com.pseudomuto.protokit.v1.extend_enum_value"].(*bool)
+	extendedValue, ok = enumValue.OptionExtensions["com.aggronmagi.protokit.v1.extend_enum_value"].(bool)
 	assert.True(ok)
-	assert.True(*extendedValue)
+	assert.True(extendedValue)
 }

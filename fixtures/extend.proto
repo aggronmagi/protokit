@@ -2,7 +2,7 @@ syntax = "proto2";
 
 import "google/protobuf/descriptor.proto";
 
-package com.pseudomuto.protokit.v1;
+package com.aggronmagi.protokit.v1;
 
 /**
  * Extension of protobuf file options.
@@ -50,5 +50,5 @@ extend google.protobuf.MessageOptions {
  * Extension of protobuf field options.
  */
 extend google.protobuf.FieldOptions {
-  optional bool extend_field = 20000;
+  optional string extend_field = 20000;
 }

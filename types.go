@@ -1,11 +1,13 @@
 package protokit
 
 import (
-	"github.com/golang/protobuf/proto"
-	"github.com/golang/protobuf/protoc-gen-go/descriptor"
-
 	"fmt"
 	"strings"
+
+	"google.golang.org/protobuf/proto"
+	"google.golang.org/protobuf/reflect/protoreflect"
+	"google.golang.org/protobuf/reflect/protoregistry"
+	"google.golang.org/protobuf/types/descriptorpb"
 )
 
 type common struct {
@@ -47,19 +49,20 @@ func (c *common) GetFullName() string { return c.FullName }
 func (c *common) IsProto3() bool { return c.file.GetSyntax() == "proto3" }
 
 func getOptions(options proto.Message) (m map[string]interface{}) {
-	for _, extension := range proto.RegisteredExtensions(options) {
-		if !proto.HasExtension(options, extension) {
-			continue
-		}
-		ext, err := proto.GetExtension(options, extension)
-		if err != nil {
-			continue
-		}
-		if m == nil {
-			m = make(map[string]interface{})
-		}
-		m[extension.Name] = ext
-	}
+	protoregistry.GlobalTypes.RangeExtensionsByMessage(
+		options.ProtoReflect().Descriptor().FullName(),
+		func(extension protoreflect.ExtensionType) bool {
+			if m == nil {
+				m = make(map[string]interface{})
+			}
+			//typ := extension.TypeDescriptor()
+			//log.Printf("extension: name:[%s] hasDef:%t kind:%+v ext:%t c:%#v\n", extension.TypeDescriptor().FullName(),
+			// typ.HasDefault(), typ.Kind(), typ.IsExtension(), proto.GetExtension(options, extension))
+
+			m[string(extension.TypeDescriptor().FullName())] = proto.GetExtension(options, extension)
+			return true
+		},
+	)
 	return m
 }
 
@@ -83,7 +86,7 @@ type ImportedDescriptor struct {
 // A FileDescriptor describes a single proto file with all of its messages, enums, services, etc.
 type FileDescriptor struct {
 	comments Comments
-	*descriptor.FileDescriptorProto
+	*descriptorpb.FileDescriptorProto
 
 	Comments        *Comment // Deprecated: see PackageComments
 	PackageComments *Comment
@@ -175,7 +178,7 @@ func (f *FileDescriptor) setOptions(options proto.Message) {
 // An EnumDescriptor describe an enum type
 type EnumDescriptor struct {
 	common
-	*descriptor.EnumDescriptorProto
+	*descriptorpb.EnumDescriptorProto
 	Parent   *Descriptor
 	Values   []*EnumValueDescriptor
 	Comments *Comment
@@ -204,7 +207,7 @@ func (e *EnumDescriptor) GetNamedValue(name string) *EnumValueDescriptor {
 // An EnumValueDescriptor describes an enum value
 type EnumValueDescriptor struct {
 	common
-	*descriptor.EnumValueDescriptorProto
+	*descriptorpb.EnumValueDescriptorProto
 	Enum     *EnumDescriptor
 	Comments *Comment
 }
@@ -218,7 +221,7 @@ func (v *EnumValueDescriptor) GetEnum() *EnumDescriptor { return v.Enum }
 // An ExtensionDescriptor describes a protobuf extension. If it's a top-level extension it's parent will be `nil`
 type ExtensionDescriptor struct {
 	common
-	*descriptor.FieldDescriptorProto
+	*descriptorpb.FieldDescriptorProto
 	Parent   *Descriptor
 	Comments *Comment
 }
@@ -232,7 +235,7 @@ func (e *ExtensionDescriptor) GetParent() *Descriptor { return e.Parent }
 // A Descriptor describes a message
 type Descriptor struct {
 	common
-	*descriptor.DescriptorProto
+	*descriptorpb.DescriptorProto
 	Parent     *Descriptor
 	Comments   *Comment
 	Enums      []*EnumDescriptor
@@ -302,7 +305,7 @@ func (m *Descriptor) GetMessageField(name string) *FieldDescriptor {
 // A FieldDescriptor describes a message field
 type FieldDescriptor struct {
 	common
-	*descriptor.FieldDescriptorProto
+	*descriptorpb.FieldDescriptorProto
 	Comments *Comment
 	Message  *Descriptor
 }
@@ -316,7 +319,7 @@ func (mf *FieldDescriptor) GetMessage() *Descriptor { return mf.Message }
 // A ServiceDescriptor describes a service
 type ServiceDescriptor struct {
 	common
-	*descriptor.ServiceDescriptorProto
+	*descriptorpb.ServiceDescriptorProto
 	Comments *Comment
 	Methods  []*MethodDescriptor
 }
@@ -341,7 +344,7 @@ func (s *ServiceDescriptor) GetNamedMethod(name string) *MethodDescriptor {
 // A MethodDescriptor describes a method in a service
 type MethodDescriptor struct {
 	common
-	*descriptor.MethodDescriptorProto
+	*descriptorpb.MethodDescriptorProto
 	Comments *Comment
 	Service  *ServiceDescriptor
 }
